@@ -14,17 +14,17 @@ export class TokenPriceTasksService {
     private cacheService: CacheService
   ) {}
 
-  @Interval(10000)
-  handleInterval() {
-    this.logger.debug("Called every 10 seconds");
-    this.update_price().catch((err) => {
-      this.logger.error(err);
-    });
-  }
+  // @Interval(10000)
+  // handleInterval() {
+  //   this.logger.debug("Called every 10 seconds");
+  //   this.update_price().catch((err) => {
+  //     this.logger.error(err);
+  //   });
+  // }
 
-  @Cron("0 * * * *")
+  @Cron("10 * * * * *")
   handleCron() {
-    this.logger.debug("Called every minute");
+    this.logger.debug("Called every minute at the 10 sec");
     this.update_price().catch((err) => {
       this.logger.error(err);
     });
@@ -46,38 +46,27 @@ export class TokenPriceTasksService {
       }
     });
 
-    // const market_tokens_prices = [];
     const market_tokens_prices = await this.market_price(market_tokens);
     for (const token of market_tokens_prices) {
       price_ref[token["NEAR_ID"]] = token["price"];
     }
 
-    // this.logger.log(JSON.stringify(market_tokens_prices))
-
-    // const pool_prices = [];
     const pool_prices = await this.pool_price(pool_tokens);
 
     tokens_prices = [...market_tokens_prices, ...pool_prices];
 
+    let len = tokens_prices.length;
+    let i = 0;
     for (const token of tokens_prices) {
+      this.logger.log(`total ${++i}/${len} token need update`);
       if (token["BASE_ID"] != "") {
         if (price_ref[token["BASE_ID"]]) {
-          // this.logger.debug(`token["price"]`, token["price"]);
-          // this.logger.debug(
-          //   `10 * decimals[token["BASE_ID"]]`,
-          //   10 * decimals[token["BASE_ID"]]
-          // );
-          // this.logger.debug(
-          //   `price_ref[token["BASE_ID"]]`,
-          //   price_ref[token["BASE_ID"]]
-          // );
-
           const price =
-            Number(token["price"]) *
-            Number(10 * decimals[token["BASE_ID"]]) *
+            (Number(token["price"]) /
+              Math.pow(10, decimals[token["BASE_ID"]])) *
             Number(price_ref[token["BASE_ID"]]);
 
-          this.logger.debug(`price`, price);
+          this.logger.debug(`token[${token.NEAR_ID}]:${price}`);
 
           await this.cacheService.add_token_price(
             token["NEAR_ID"],

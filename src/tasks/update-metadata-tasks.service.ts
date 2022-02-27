@@ -13,7 +13,7 @@ export class UpdateMetadataTasksService {
     private cacheService: CacheService
   ) {}
 
-  @Cron("60 * * * * *")
+  @Cron("0 * * * * *")
   handleCron() {
     this.logger.debug("Called every minute at the 0 sec");
     // this.init_token_metadata_to_redis().catch((e) => {

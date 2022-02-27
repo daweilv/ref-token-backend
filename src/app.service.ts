@@ -32,7 +32,7 @@ export class AppService {
       ret["rftt.tkn.near"] = {
         price: prices["token.v2.ref-finance.near"],
         decimal: 8,
-        symbol: "RFTT,
+        symbol: "RFTT",
       };
 
     return ret;
@@ -49,7 +49,7 @@ export class AppService {
     this.logger.debug(price);
     const ret = {
       token_contract_id,
-      price: price ?? "N/A"
+      price: price ?? "N/A",
     };
     this.logger.debug(ret);
     return ret;
