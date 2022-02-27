@@ -3,7 +3,7 @@ import { Cfg } from "../../config";
 
 export type RedisClientType = ReturnType<typeof createClient>;
 export const r: RedisClientType = createClient({
-  url: `redis://${Cfg.REDIS.HOST}:${Cfg.REDIS.PORT}`
+  url: `redis://${Cfg.REDIS.HOST}:${Cfg.REDIS.PORT}`,
 });
 
 // export default async function start(): Promise<RedisClientType> {

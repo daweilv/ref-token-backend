@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, Query } from "@nestjs/common";
+import { Controller, Get, Query } from "@nestjs/common";
 import { AppService } from "./app.service";
 import { TokenMetaInterface } from "./interfaces/token-meta.interface";
 import { ListTokenPriceInterface } from "./interfaces/list-token-price.interface";
@@ -6,8 +6,7 @@ import { TokenPriceInterface } from "./interfaces/token-price.interface";
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {
-  }
+  constructor(private readonly appService: AppService) {}
 
   @Get()
   getHello(): Promise<string> {

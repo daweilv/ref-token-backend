@@ -4,5 +4,7 @@ export interface ListTokenPriceItemInterface {
   symbol: string;
 }
 
-export type ListTokenPriceInterface = Record<string,
-  ListTokenPriceItemInterface>;
+export type ListTokenPriceInterface = Record<
+  string,
+  ListTokenPriceItemInterface
+>;
