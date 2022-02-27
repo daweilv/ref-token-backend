@@ -1,6 +1,6 @@
 ## Description
 
-ref-token-server is the node.js version of (indexer-helper)[https://github.com/ref-finance/indexer-helper]'s
+ref-token-server is the node.js version of [indexer-helper](https://github.com/ref-finance/indexer-helper)'s
 implementation.
 
 ## Installation
