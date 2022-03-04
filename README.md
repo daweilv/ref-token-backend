@@ -5,13 +5,16 @@ implementation.
 
 ## Installation
 
-set `Cfg.NETWORK_ID` with `TESTNET`|`DEVNET`|`MAINNET` in `config.ts`.
+1. Set `Cfg.NETWORK_ID` with `TESTNET`|`DEVNET`|`MAINNET` in `config.ts`.
 
+2. Set `REDIS.HOST` and `REDIS.PORT`
+
+3. Init dependencies
 ```bash
 $ npm install
 ```
 
-## Running the app
+4. Running the app
 
 ```bash
 # development
@@ -39,4 +42,4 @@ $ npm run test:cov
 
 ## License
 
-Nest is [MIT licensed](LICENSE).
+Ref Token Server is [MIT licensed](LICENSE).
