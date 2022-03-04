@@ -73,7 +73,8 @@ export class NearRPCService {
   }
 
   view_call(account_id, method_name, args, finality = "optimistic") {
-    // this.logger.debug("view_call args", args);
+    this.logger.debug(`account_id ${account_id}   method_name ${method_name}`);
+    this.logger.debug("view_call args", args);
     return this.json_rpc("query", {
       request_type: "call_function",
       account_id: account_id,

@@ -19,7 +19,7 @@ export class UpdateMetadataTasksService {
     // this.init_token_metadata_to_redis().catch((e) => {
     //   this.logger.error(e);
     // });
-    this.update().catch((e) => {
+    this.syncTokenMeta().catch((e) => {
       this.logger.log(e);
     });
   }
@@ -32,7 +32,7 @@ export class UpdateMetadataTasksService {
   //   });
   // }
 
-  async update() {
+  async syncTokenMeta() {
     let token_metadata = {};
 
     try {
@@ -45,6 +45,9 @@ export class UpdateMetadataTasksService {
           "get_whitelisted_tokens",
           ""
         );
+        if (!ret.result) {
+          throw new Error(`update cannot find contract ${contract}`);
+        }
         const whitelist_tokens = JSON.parse(String.fromCharCode(...ret.result));
         const len = whitelist_tokens.length;
         let i = 0;
@@ -76,53 +79,55 @@ export class UpdateMetadataTasksService {
     }
   }
 
-  async init_token_metadata_to_redis() {
-    let metadata_obj = {
-      spec: "",
-      name: "",
-      symbol: "",
-      icon: "",
-      reference: "",
-      reference_hash: "",
-      decimals: 0,
-    };
-    const contract = Cfg.NETWORK[Cfg.NETWORK_ID].REF_CONTRACT;
-    try {
-      const ret = await this.nearRPCService.view_call(
-        contract,
-        "get_whitelisted_tokens",
-        ""
-      );
-      const whitelist_tokens = JSON.parse(String.fromCharCode(...ret.result));
-      for (const token of whitelist_tokens) {
-        await this.internal_update_token_metadata(token, metadata_obj);
-      }
-    } catch (e) {
-      this.logger.error(e);
-    }
-  }
+  //
+  // async init_token_metadata_to_redis() {
+  //   let metadata_obj = {
+  //     spec: "",
+  //     name: "",
+  //     symbol: "",
+  //     icon: "",
+  //     reference: "",
+  //     reference_hash: "",
+  //     decimals: 0,
+  //   };
+  //   const contract = Cfg.NETWORK[Cfg.NETWORK_ID].REF_CONTRACT;
+  //   try {
+  //     const ret = await this.nearRPCService.view_call(
+  //       contract,
+  //       "get_whitelisted_tokens",
+  //       ""
+  //     );
+  //     if (!ret.result) {
+  //       throw new Error(
+  //         `init_token_metadata_to_redis cannot find contract ${contract}`
+  //       );
+  //     }
+  //     const whitelist_tokens = JSON.parse(String.fromCharCode(...ret.result));
+  //     for (const token of whitelist_tokens) {
+  //       await this.internal_update_token_metadata(token, metadata_obj);
+  //     }
+  //   } catch (e) {
+  //     this.logger.error(e);
+  //   }
+  // }
 
   async internal_update_token_metadata(contract_id, metadata) {
     let ret = null;
-    let metadata_obj;
     try {
       ret = await this.nearRPCService.view_call(contract_id, "ft_metadata", "");
-      if (ret.hasOwnProperty("result")) {
-        metadata_obj = JSON.parse(String.fromCharCode(...ret.result));
-      } else {
-        this.logger.log(`Does not got token metadata ${contract_id}`);
+      if (!ret.result) {
+        throw new Error(`Does not got token metadata ${contract_id}`);
       }
+      const metadata_obj = JSON.parse(String.fromCharCode(...ret.result));
 
-      if (ret) {
-        if (JSON.stringify(metadata) !== JSON.stringify(metadata_obj)) {
-          await this.cacheService.add_token_metadata(
-            contract_id,
-            JSON.stringify(metadata_obj)
-          );
-        }
+      if (JSON.stringify(metadata) !== JSON.stringify(metadata_obj)) {
+        await this.cacheService.add_token_metadata(
+          contract_id,
+          JSON.stringify(metadata_obj)
+        );
       }
     } catch (e) {
-      this.logger.error(e);
+      this.logger.error("internal_update_token_metadata", e);
     }
     return !!ret;
   }

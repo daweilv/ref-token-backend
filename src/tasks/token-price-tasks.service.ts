@@ -1,3 +1,4 @@
+import BigNumber from "bignumber.js";
 import { Injectable, Logger } from "@nestjs/common";
 import { Cron, Interval } from "@nestjs/schedule";
 import { Cfg } from "../../config";
@@ -61,12 +62,11 @@ export class TokenPriceTasksService {
       this.logger.log(`total ${++i}/${len} token need update`);
       if (token["BASE_ID"] != "") {
         if (price_ref[token["BASE_ID"]]) {
-          const price =
-            (Number(token["price"]) /
-              Math.pow(10, decimals[token["BASE_ID"]])) *
-            Number(price_ref[token["BASE_ID"]]);
+          const price = new BigNumber(token["price"])
+            .div(new BigNumber(10).pow(decimals[token["BASE_ID"]]))
+            .times(new BigNumber(price_ref[token["BASE_ID"]]));
 
-          this.logger.debug(`token[${token.NEAR_ID}]:${price}`);
+          this.logger.debug(`token[${token.NEAR_ID}]:${price.toFixed(8)}`);
 
           await this.cacheService.add_token_price(
             token["NEAR_ID"],
@@ -118,7 +118,7 @@ export class TokenPriceTasksService {
     }
 
     if (obj) {
-      this.logger.debug("sync market_price success");
+      this.logger.debug(`sync market_price success ${JSON.stringify(obj)}`);
     }
 
     tokens.forEach((token) => {
@@ -145,10 +145,18 @@ export class TokenPriceTasksService {
         const ret = await this.nearRPCService.view_call(
           src,
           "get_return",
-          `{"pool_id": ${pool_id}, "token_in": "${token["NEAR_ID"]}", "amount_in": "1${token["DECIMAL"]}", "token_out": "${base}"}`
+          `{"pool_id": ${pool_id}, "token_in": "${
+            token["NEAR_ID"]
+          }", "amount_in": "${new BigNumber(10).pow(
+            token["DECIMAL"]
+          ).toFixed()}", "token_out": "${base}"}`
         );
-        this.logger.debug("pool_price nearRPCService res", ret);
-        const price = JSON.parse(String.fromCharCode(...ret.result));
+        // this.logger.debug("pool_price nearRPCService res", ret);
+        if (!ret.result) {
+          throw new Error(`${src} get_return failed`);
+        }
+        let price = JSON.parse(String.fromCharCode(...ret.result));
+        this.logger.debug(`${src} ${price}`)
 
         pool_tokens_price.push({
           NEAR_ID: token["NEAR_ID"],
